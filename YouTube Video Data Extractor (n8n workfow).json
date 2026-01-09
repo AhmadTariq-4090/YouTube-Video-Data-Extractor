@@ -1,0 +1,255 @@
+{
+  "name": "YouTube Video Data Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "EVODFNUOYm3wNFTr",
+          "mode": "list",
+          "cachedResultName": "YoutubeScraperResults",
+          "cachedResultUrl": "/projects/3P8Qzp7fkc322TPF/datatables/EVODFNUOYm3wNFTr"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.URL }}",
+            "VideoTitle": "={{ $json.VideoTitle }}",
+            "VideoTranscrpit": "={{ $json.transcript }}",
+            "ChannelName": "={{ $json.ChannelName }}",
+            "VideoPostDate": "={{ $json.videoPostDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ChannelName",
+              "displayName": "ChannelName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "VideoTitle",
+              "displayName": "VideoTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "VideoPostDate",
+              "displayName": "VideoPostDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "VideoTranscrpit",
+              "displayName": "VideoTranscrpit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "optimizeBulk": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        800
+      ],
+      "id": "2b5a66dc-7fcd-47d9-bbd0-e191b2fe1cd3",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the first item from HTTP Request node\nconst httpData = $('HTTP Request1').first().json;\nconst aggregatedText = $json.text;\n\n// Join the aggregated text array into a single string\nlet transcriptText = '';\nif (Array.isArray(aggregatedText)) {\n  transcriptText = aggregatedText.join(' ');\n} else {\n  transcriptText = aggregatedText || '';\n}\n\n// Return formatted data for data table\nreturn {\n  URL: httpData.url || '',\n  ChannelName: httpData.channel_name || '',\n  VideoTitle: httpData.title || '',\n  videoPostDate: httpData.published_at || '',\n  transcript: transcriptText\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        800
+      ],
+      "id": "d23ff62b-4e00-4ec1-ab3e-a0d74d70f2b4",
+      "name": "Format Data"
+    },
+    {
+      "parameters": {
+        "formTitle": "YouTube Video Transcript Generator",
+        "formDescription": "Enter a YouTube video URL to extract the transcript and video details",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "YouTube Video URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Extract Transcript"
+        }
+      },
+      "id": "3c25f110-4a10-4f32-99a1-f2beadfc3fe3",
+      "name": "YouTube URL Form1",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        800
+      ],
+      "webhookId": "e3b1375f-8932-4e4c-985d-87551dcf5182"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/starvibe~youtube-video-transcript/run-sync-get-dataset-items?token=apify_api_lc2c5wRx1oPMqw8p8JIquzKQRsmpsr1YmpbQ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"youtube_url\": \"{{ $json['YouTube Video URL'] }}\",\n\"language\": \"en\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        720,
+        800
+      ],
+      "id": "055b21f9-2948-47c2-bfe6-02a00a6e06bb",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "transcript",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        928,
+        800
+      ],
+      "id": "3c07864a-a0cf-45eb-9205-bb20376f8c37",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {
+          "mergeLists": true
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        800
+      ],
+      "id": "55b1205d-1e9e-4bf7-a86f-67b00fef3da4",
+      "name": "Aggregate1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "YouTube URL Form1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "97f3844f-fdb8-4048-bd7a-b7a88464e68b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68cc5883d65047fdf8c67b1d7c87e0740449da1cc6e975ed8cfef75125631532"
+  },
+  "id": "azeA55jxqBZbt7JO",
+  "tags": []
+}
